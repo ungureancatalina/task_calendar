@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.taskuri.controller.NoteController"
+      prefWidth="600" prefHeight="400" style="-fx-background-color: #dbc6eb;">
+
+    <Label text="Notes" layoutX="250" layoutY="10"
+           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
+
+    <ListView fx:id="notesListView" layoutX="20" layoutY="50" prefWidth="250" prefHeight="300"
+              style="-fx-font-size: 16px; -fx-border-color: #4b0082;"/>
+
+    <TextArea fx:id="noteContentTextArea" layoutX="280" layoutY="50" prefWidth="290" prefHeight="200"
+              wrapText="true"
+              style="-fx-font-size: 16px; -fx-border-color: #4b0082;"/>
+
+    <Button text="Add Note" fx:id="addNoteButton" onAction="#addNote"
+            layoutX="280" layoutY="270" prefWidth="140"
+            style="-fx-font-size: 16px; -fx-background-color: #7a5dab; -fx-text-fill: white;"/>
+
+    <Button text="Delete Note" fx:id="deleteNoteButton" onAction="#deleteNote"
+            layoutX="430" layoutY="270" prefWidth="140"
+            style="-fx-font-size: 16px; -fx-background-color: #7a5dab; -fx-text-fill: white;"/>
+</Pane>
