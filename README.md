@@ -1,1 +1,1 @@
-in progress
+Task Calendar is a Java-based application designed to help users organize their tasks efficiently. It features a calendar interface where tasks can be scheduled, viewed, and managed. The application uses a database for persistent storage, allowing users to save and retrieve tasks. It also includes user login functionality, enabling personalized task management, and a notes feature where users can add specific details about each task. To use it, clone the repository, navigate to the project directory, and run the application using Java. 
