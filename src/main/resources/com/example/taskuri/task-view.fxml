@@ -84,7 +84,7 @@
             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #7a5dab; -fx-text-fill: white;"
             prefWidth="230" layoutX="830" layoutY="500"/>
 
-    <Button text="See More" fx:id="seeNotes" onAction="#notespage"
+    <Button text="See Notes" fx:id="seeNotesButton" onAction="#openNotesview"
             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #7a5dab; -fx-text-fill: white;"
             prefWidth="230" layoutX="830" layoutY="550"/>
 

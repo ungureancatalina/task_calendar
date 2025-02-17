@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.taskuri.controller.NoteController"
+      prefWidth="900" prefHeight="700" style="-fx-background-color: #dbc6eb; -fx-padding: 20px;">
+
+    <TextArea fx:id="taskDescriptionTextArea" layoutX="20" layoutY="20" prefWidth="420" prefHeight="160"
+              editable="false"
+              text="Description :  "
+              style="-fx-font-size: 16px; -fx-border-color: #4b0082; -fx-control-inner-background: #eee4f8;"/>
+
+    <TextArea fx:id="notesTextArea" layoutX="460" layoutY="20" prefWidth="420" prefHeight="160"
+              editable="false" wrapText="true"
+              style="-fx-font-size: 16px; -fx-border-color: #4b0082; -fx-control-inner-background: #eee4f8;">
+    </TextArea>
+
+    <ListView fx:id="notesListView" layoutX="20" layoutY="200" prefWidth="860" prefHeight="300"
+              style="-fx-border-color: #4b0082; -fx-background-color: #bda8e0;"/>
+
+    <TextArea fx:id="noteContentTextArea" layoutX="20" layoutY="520" prefWidth="860" prefHeight="80"
+              promptText="Insert new or modified note..."
+              style="-fx-font-size: 16px;-fx-border-color: #4b0082; -fx-font-weight: bold;
+               -fx-background-color: #a48bce; -fx-border-width: 2px; -fx-prompt-text-fill: white; -fx-control-inner-background: #a48bce;"/>
+
+    <HBox layoutX="20" layoutY="620" spacing="20">
+        <Button text="Add" fx:id="addNoteButton" onAction="#addNote"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #7a5dab; -fx-text-fill: white; "
+                prefWidth="120"/>
+        <Button text="Modify" fx:id="modifyNoteButton" onAction="#modifyNote"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #7a5dab; -fx-text-fill: white;"
+                prefWidth="120" disable="true"/>
+        <Button text="Delete" fx:id="deleteNoteButton" onAction="#deleteNote"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #7a5dab; -fx-text-fill: white;"
+                prefWidth="120" disable="true"/>
+    </HBox>
+
+</Pane>

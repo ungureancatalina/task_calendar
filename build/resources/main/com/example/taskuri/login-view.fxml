@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.taskuri.controller.LoginController"
+      prefWidth="400" prefHeight="300" style="-fx-background-color: #dbc6eb;">
+
+    <Label text="USER DATA" layoutX="140" layoutY="20"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
+
+    <Label text="Email:" layoutX="50" layoutY="80"
+           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
+    <TextField fx:id="emailField" promptText="Email" layoutX="150" layoutY="80" prefWidth="200"
+               style="-fx-font-size: 16px; -fx-prompt-text-fill: white; -fx-font-weight: bold;
+             -fx-border-color: #4b0082;-fx-background-color: #a48bce; "/>
+
+    <Label text="Password:" layoutX="50" layoutY="130"
+           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
+
+    <HBox layoutX="150" layoutY="130" spacing="0" alignment="CENTER_RIGHT">
+        <StackPane>
+            <PasswordField fx:id="passwordField" promptText="Password" prefWidth="200"
+                           style="-fx-font-size: 16px; -fx-prompt-text-fill: white; -fx-font-weight: bold;-fx-border-color: #4b0082; -fx-background-color: #a48bce;  -fx-padding: 5px 35px 5px 5px;"/>
+            <TextField fx:id="passwordTextField" promptText="Password" prefWidth="200" visible="false"
+                       style="-fx-font-size: 16px; -fx-prompt-text-fill: white;-fx-font-weight: bold; -fx-border-color: #4b0082;-fx-background-color: #a48bce; -fx-padding: 5px 35px 5px 5px;"/>
+            <Button fx:id="togglePasswordButton" text="👁" onAction="#togglePasswordVisibility"
+                    style="-fx-font-size: 16px; -fx-background-color: transparent; -fx-text-fill: #4b0082;
+                       -fx-border-color: transparent; -fx-cursor: hand;"
+                    prefWidth="40" maxWidth="40" minWidth="40"
+                    prefHeight="35" maxHeight="35" minHeight="35"
+                    StackPane.alignment="CENTER_RIGHT"/>
+        </StackPane>
+    </HBox>
+
+    <Button text="Login" fx:id="loginButton" onAction="#handleLogin"
+            layoutX="100" layoutY="200" prefWidth="90"
+            style="-fx-font-size: 16px; -fx-font-weight: bold;-fx-background-color: #7a5dab; -fx-text-fill: white;"/>
+
+    <Button text="Sign Up" fx:id="signupButton" onAction="#handleSignup"
+            layoutX="210" layoutY="200" prefWidth="90"
+            style="-fx-font-size: 16px;  -fx-font-weight: bold;-fx-background-color: #7a5dab; -fx-text-fill: white;"/>
+</Pane>

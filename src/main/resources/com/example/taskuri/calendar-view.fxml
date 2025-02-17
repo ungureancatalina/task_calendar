@@ -5,6 +5,7 @@
 
 <Pane xmlns="http://javafx.com/javafx/8"
       xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="980" prefHeight="550"
       fx:controller="com.example.taskuri.controller.CalendarController"
       style="-fx-background-color: #dbc6eb;">
 
@@ -31,5 +32,8 @@
             <ColumnConstraints percentWidth="14.28"/>
         </columnConstraints>
     </GridPane>
+
+    <Label fx:id="taskStatusLabel" layoutX="300" layoutY="480"
+           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
 
 </Pane>

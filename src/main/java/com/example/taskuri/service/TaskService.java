@@ -1,12 +1,14 @@
 package com.example.taskuri.service;
 
 import com.example.taskuri.domain.Taskss;
+import com.example.taskuri.observer.Observable;
 import com.example.taskuri.repository.Repository;
 import com.example.taskuri.validation.ValidationException;
 import com.example.taskuri.validation.Validator;
-
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskService {
     private final Repository<Taskss> taskRepository;
@@ -26,16 +28,21 @@ public class TaskService {
         return taskRepository.getAll();
     }
 
-    public List<Taskss> getTasksByDate(LocalDate date) {
-        return getTasksByDateRange(date, date);
+    public List<Taskss> getTasksByUserId(Long userId) {
+        return taskRepository.getAll().stream()
+                .filter(task -> task.getUserId().equals(userId))
+                .collect(Collectors.toList());
     }
 
-    public List<Taskss> getTasksByDateRange(LocalDate startDate, LocalDate endDate) {
-        return taskRepository.getAll().stream()
-                .filter(task -> !task.getStartDateTime().toLocalDate().isBefore(startDate) &&
-                        (task.getFinishDateTime() == null || !task.getFinishDateTime().toLocalDate().isAfter(endDate)))
+    public List<Taskss> getTasksByUserAndDate(Long userId, LocalDate date) {
+        return taskRepository.getTasksByUserId(userId).stream()
+                .filter(task ->
+                        !task.getStartDateTime().toLocalDate().isAfter(date) &&
+                                (task.getFinishDateTime() == null || !task.getFinishDateTime().toLocalDate().isBefore(date))
+                )
                 .toList();
     }
+
 
     public void updateTask(Taskss task) throws ValidationException {
         taskValidator.validate(task);
@@ -45,11 +52,4 @@ public class TaskService {
     public void deleteTask(Long id) {
         taskRepository.delete(id);
     }
-
-    public List<Taskss> getTasksByStartDate(LocalDate date) {
-        return taskRepository.getAll().stream()
-                .filter(task -> task.getStartDateTime().toLocalDate().equals(date))
-                .toList();
-    }
-
 }

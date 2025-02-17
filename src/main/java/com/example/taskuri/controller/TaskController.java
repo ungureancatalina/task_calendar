@@ -4,7 +4,6 @@ import com.example.taskuri.domain.TaskStatus;
 import com.example.taskuri.domain.Taskss;
 import com.example.taskuri.service.NoteService;
 import com.example.taskuri.service.TaskService;
-import com.example.taskuri.validation.ValidationException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -28,76 +27,89 @@ import java.util.stream.IntStream;
 public class TaskController {
     private TaskService taskService;
     private ObservableList<Taskss> taskList;
-    private LocalDate selectedDate;
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private Long userId;
+    private Taskss selectedTask;
     private NoteService noteService;
+    private LocalDate selectedDate;
+
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @FXML
     private TableView<Taskss> taskTableView;
-
     @FXML
     private TableColumn<Taskss, String> titleColumn;
-
     @FXML
     private TableColumn<Taskss, LocalDateTime> startDateColumn;
-
     @FXML
     private TableColumn<Taskss, LocalDateTime> finishDateColumn;
-
     @FXML
     private TableColumn<Taskss, TaskStatus> statusColumn;
 
     @FXML
     private TextField taskTitleInput;
-
     @FXML
     private TextArea taskDescriptionInput;
-
     @FXML
     private DatePicker startDatePicker, finishDatePicker;
-
     @FXML
     private ComboBox<LocalTime> startTimeComboBox, finishTimeComboBox;
-
     @FXML
     private ComboBox<TaskStatus> statusComboBox;
-
     @FXML
-    private Button modifyButton, deleteButton, seeNotes;
-
-    private Taskss selectedTask;
-
+    private Button modifyButton, deleteButton, seeNotesButton;
     @FXML
     private TextArea notesTextArea;
 
-
+    public void setUserId(Long userId) {
+        this.userId = userId;
+        loadTasks();
+    }
 
     public void setTaskService(TaskService taskService) {
         this.taskService = taskService;
         loadTasks();
     }
 
+    public void setNoteService(NoteService noteService) {
+        this.noteService = noteService;
+    }
+
+    public void setSelectedDate(LocalDate date) {
+        this.selectedDate = date;
+    }
+
     private void loadTasks() {
-        if (taskService == null) {
-            showAlert("Error", "Service is not set.");
+        if (taskService == null && userId == null) {
+            showAlert("Error", "Task Service is not initialized and User ID is missing.");
             return;
         }
-        List<Taskss> tasks = taskService.getAllTasks();
+        List<Taskss> tasks = taskService.getTasksByUserId(userId);
         taskList = FXCollections.observableArrayList(tasks);
         taskTableView.setItems(taskList);
     }
 
+    public void loadUserTasks(List<Taskss> tasks) {
+        taskList.setAll(tasks);
+        taskTableView.refresh();
+    }
+
+
     @FXML
     public void initialize() {
         statusComboBox.getItems().addAll(TaskStatus.TO_DO, TaskStatus.IN_PROGRESS, TaskStatus.DONE);
+
         List<LocalTime> timeSlots = IntStream.range(0, 96)
                 .mapToObj(i -> LocalTime.of(0, 0).plusMinutes(i * 15))
                 .collect(Collectors.toList());
+
         startTimeComboBox.setItems(FXCollections.observableArrayList(timeSlots));
         finishTimeComboBox.setItems(FXCollections.observableArrayList(timeSlots));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 
+        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDateTime"));
+        finishDateColumn.setCellValueFactory(new PropertyValueFactory<>("finishDateTime"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+
         startDateColumn.setCellFactory(column -> new TableCell<Taskss, LocalDateTime>() {
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
@@ -106,7 +118,6 @@ public class TaskController {
             }
         });
 
-        finishDateColumn.setCellValueFactory(new PropertyValueFactory<>("finishDateTime"));
         finishDateColumn.setCellFactory(column -> new TableCell<Taskss, LocalDateTime>() {
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
@@ -114,44 +125,26 @@ public class TaskController {
                 setText((empty || item == null) ? null : item.format(dateTimeFormatter));
             }
         });
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         taskTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                fillTaskFields(newSelection);
+            selectedTask = newSelection;
+            if (selectedTask != null) {
+                fillTaskFields(selectedTask);
                 modifyButton.setDisable(false);
                 deleteButton.setDisable(false);
-                seeNotes.setDisable(false);
-            }
-        });
-
-
-        taskTableView.setRowFactory(tv -> new TableRow<>() {
-            @Override
-            protected void updateItem(Taskss task, boolean empty) {
-                super.updateItem(task, empty);
-                if (empty || task == null) {
-                    setStyle("");
-                } else {
-                    setStyle("-fx-background-color: #c7a0e8; -fx-text-fill: white;");
-                }
+                seeNotesButton.setDisable(false);
             }
         });
 
         modifyButton.setDisable(true);
         deleteButton.setDisable(true);
-        seeNotes.setDisable(true);
-
-        startDatePicker.getEditor().setStyle("-fx-background-color: #a48bce; -fx-prompt-text-fill: black;");
-        finishDatePicker.getEditor().setStyle("-fx-background-color: #a48bce; -fx-prompt-text-fill: black;");
-
+        seeNotesButton.setDisable(true);
         notesTextArea.setText(
-                "- To **add** a task**, fill in all fields and click \"Add Task\".\n\n" +
-                        "- To **modify** a task**, select it from the table and update fields, then click \"Modify Task\".\n\n" +
-                        "- To **delete** a task**, select it from the table and click \"Delete Task\".\n\n" +
+                "- To **add** a task, fill in all fields and click \"Add Task\".\n\n" +
+                        "- To **modify** a task, select it from the table and update fields, then click \"Modify Task\".\n\n" +
+                        "- To **delete** a task, select it from the table and click \"Delete Task\".\n\n" +
                         "- To **find more information** about the task, select it from the table and click \"See More\"."
         );
-
     }
 
     private void fillTaskFields(Taskss task) {
@@ -172,16 +165,21 @@ public class TaskController {
 
     @FXML
     public void addTask() {
-        String title = taskTitleInput.getText();
-        String description = taskDescriptionInput.getText();
+        if (userId == null) {
+            showAlert("Error", "No user logged in. Please restart the application.");
+            return;
+        }
+
+        String title = taskTitleInput.getText().trim();
+        String description = taskDescriptionInput.getText().trim();
         LocalDate startDate = startDatePicker.getValue();
-        LocalDate finishDate = finishDatePicker.getValue();
         LocalTime startTime = startTimeComboBox.getValue();
+        LocalDate finishDate = finishDatePicker.getValue();
         LocalTime finishTime = finishTimeComboBox.getValue();
         TaskStatus status = statusComboBox.getValue();
 
-        if (title.isEmpty() || description.isEmpty() || startDate == null || startTime == null || status == null) {
-            showAlert("Error", "Please fill in all required fields!");
+        if (title.isEmpty() || startDate == null || startTime == null || status == null) {
+            showAlert("Error", "Please fill in all required fields.");
             return;
         }
 
@@ -189,42 +187,23 @@ public class TaskController {
         LocalDateTime finishDateTime = (finishDate != null && finishTime != null) ? LocalDateTime.of(finishDate, finishTime) : null;
 
         if (finishDateTime != null && finishDateTime.isBefore(startDateTime)) {
-            showAlert("Error", "Finish date and time must be after Start date and time.");
+            showAlert("Error", "Finish date must be after start date.");
             return;
         }
 
-        Taskss newTask = new Taskss(null, title, description, startDateTime, finishDateTime, status);
+        List<Taskss> existingTasks = taskService.getTasksByUserId(userId);
+        boolean taskExists = existingTasks.stream()
+                .anyMatch(task -> task.getTitle().equalsIgnoreCase(title) &&
+                        task.getStartDateTime().equals(startDateTime));
+
+        if (taskExists) {
+            showAlert("Error", "A task with the same title and start time already exists.");
+            return;
+        }
+
+        Taskss newTask = new Taskss(null, title, description, startDateTime, finishDateTime, status, userId);
         taskService.addTask(newTask);
-        taskList.add(newTask);
-
         clearFields();
-    }
-
-    @FXML
-    public void modifyTask() {
-        if (selectedTask == null) {
-            showAlert("Error", "No task selected for modification!");
-            return;
-        }
-
-        selectedTask.setTitle(taskTitleInput.getText());
-        selectedTask.setDescription(taskDescriptionInput.getText());
-        selectedTask.setStartDateTime(LocalDateTime.of(startDatePicker.getValue(), startTimeComboBox.getValue()));
-
-        if (finishDatePicker.getValue() != null && finishTimeComboBox.getValue() != null) {
-            selectedTask.setFinishDateTime(LocalDateTime.of(finishDatePicker.getValue(), finishTimeComboBox.getValue()));
-            if (selectedTask.getFinishDateTime().isBefore(selectedTask.getStartDateTime())) {
-                showAlert("Error", "Finish date and time must be after Start date and time.");
-                return;
-            }
-        } else {
-            selectedTask.setFinishDateTime(null);
-        }
-
-        selectedTask.setStatus(statusComboBox.getValue());
-
-        taskService.updateTask(selectedTask);
-        taskTableView.refresh();
     }
 
     @FXML
@@ -237,6 +216,73 @@ public class TaskController {
         taskList.remove(selectedTask);
         clearFields();
     }
+
+    @FXML
+    public void modifyTask() {
+        if (selectedTask == null) {
+            showAlert("Error", "No task selected for modification!");
+            return;
+        }
+
+        String title = taskTitleInput.getText().trim();
+        String description = taskDescriptionInput.getText().trim();
+        LocalDate startDate = startDatePicker.getValue();
+        LocalTime startTime = startTimeComboBox.getValue();
+        LocalDate finishDate = finishDatePicker.getValue();
+        LocalTime finishTime = finishTimeComboBox.getValue();
+        TaskStatus status = statusComboBox.getValue();
+
+        if (title.isEmpty() || startDate == null || startTime == null || status == null) {
+            showAlert("Error", "Please fill in all required fields.");
+            return;
+        }
+
+        LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime);
+        LocalDateTime finishDateTime = (finishDate != null && finishTime != null) ? LocalDateTime.of(finishDate, finishTime) : null;
+
+        if (finishDateTime != null && finishDateTime.isBefore(startDateTime)) {
+            showAlert("Error", "Finish date must be after start date.");
+            return;
+        }
+
+        selectedTask.setTitle(title);
+        selectedTask.setDescription(description);
+        selectedTask.setStartDateTime(startDateTime);
+        selectedTask.setFinishDateTime(finishDateTime);
+        selectedTask.setStatus(status);
+
+        taskService.updateTask(selectedTask);
+        taskTableView.refresh();
+    }
+
+    @FXML
+    public void openNotesview() {
+        Taskss selectedTask = taskTableView.getSelectionModel().getSelectedItem();
+        if (selectedTask == null) {
+            showAlert("Error", "Please select a task first!");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/taskuri/note-view.fxml"));
+            Parent root = loader.load();
+
+            NoteController noteController = loader.getController();
+            noteController.setNoteService(noteService);
+            noteController.setTask(selectedTask);
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Notes for Task: " + selectedTask.getTitle());
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
     private void clearFields() {
         taskTitleInput.clear();
@@ -256,49 +302,4 @@ public class TaskController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-    public void setSelectedDate(LocalDate date) {
-        this.selectedDate = date;
-        loadTasksForDate();
-    }
-
-    private void loadTasksForDate() {
-        if (selectedDate == null || taskService == null) {
-            showAlert("Error", "No date or service set");
-            return;
-        }
-
-        List<Taskss> tasks = taskService.getTasksByStartDate(selectedDate);
-        taskList.setAll(tasks);
-    }
-
-    public void setNoteService(NoteService noteService) {
-        this.noteService = noteService;
-    }
-
-    @FXML
-    public void notespage() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/taskuri/notes-view.fxml"));
-            Parent root = loader.load();
-
-            NoteController noteController = loader.getController();
-
-            if (this.noteService != null) {
-                noteController.setNoteService(this.noteService);
-            } else {
-                showAlert("Error", "NoteService is not initialized.");
-                return;
-            }
-
-            Stage stage = new Stage();
-            stage.setTitle("Task Notes");
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }

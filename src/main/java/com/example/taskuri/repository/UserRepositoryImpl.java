@@ -1,9 +1,10 @@
 package com.example.taskuri.repository;
 
+import com.example.taskuri.domain.Taskss;
 import com.example.taskuri.domain.User;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class UserRepositoryImpl implements Repository<User> {
     private final String url;
@@ -18,11 +19,11 @@ public class UserRepositoryImpl implements Repository<User> {
 
     @Override
     public void add(User user) {
-        String sql = "INSERT INTO users (name, email) VALUES (?, ?)";
+        String sql = "INSERT INTO users (email, password) VALUES (?, ?)";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getName());
-            stmt.setString(2, user.getEmail());
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getPassword());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -31,35 +32,12 @@ public class UserRepositoryImpl implements Repository<User> {
 
     @Override
     public List<User> getAll() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users";
-        try (Connection conn = DriverManager.getConnection(url, username, password);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                User user = new User(
-                        rs.getLong("id"),
-                        rs.getString("name"),
-                        rs.getString("email")
-                );
-                users.add(user);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return users;
+        return List.of();
     }
 
     @Override
     public void delete(Long id) {
-        String sql = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = DriverManager.getConnection(url, username, password);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
     }
 
     @Override
@@ -67,6 +45,13 @@ public class UserRepositoryImpl implements Repository<User> {
 
     }
 
+    @Override
+    public List<User> getNotesByTaskId(Long taskId) {
+        return List.of();
+    }
+
+
+    @Override
     public User getUserByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         try (Connection conn = DriverManager.getConnection(url, username, password);
@@ -76,8 +61,8 @@ public class UserRepositoryImpl implements Repository<User> {
                 if (rs.next()) {
                     return new User(
                             rs.getLong("id"),
-                            rs.getString("name"),
-                            rs.getString("email")
+                            rs.getString("email"),
+                            rs.getString("password")
                     );
                 }
             }
@@ -85,5 +70,10 @@ public class UserRepositoryImpl implements Repository<User> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public List<Taskss> getTasksByUserId(Long userId) {
+        return List.of();
     }
 }

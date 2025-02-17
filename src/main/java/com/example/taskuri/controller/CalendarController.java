@@ -1,30 +1,30 @@
 package com.example.taskuri.controller;
 
+import com.example.taskuri.domain.Taskss;
 import com.example.taskuri.service.NoteService;
 import com.example.taskuri.service.TaskService;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import javafx.fxml.FXMLLoader;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
-
-
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class CalendarController {
-
     @FXML
     private GridPane calendarGrid;
 
@@ -33,24 +33,37 @@ public class CalendarController {
 
     @FXML
     private Button prevMonthButton, nextMonthButton;
+    @FXML
+    private Label taskStatusLabel;
 
     private YearMonth currentMonth;
     private TaskService taskService;
     private NoteService noteService;
+    private Long userId;
 
     public void setNoteService(NoteService noteService) {
         this.noteService = noteService;
     }
 
-
     public void setTaskService(TaskService taskService) {
         this.taskService = taskService;
+        checkAndUpdateCalendar();
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+        checkAndUpdateCalendar();
     }
 
     @FXML
     public void initialize() {
         currentMonth = YearMonth.now();
-        updateCalendar();
+    }
+
+    private void checkAndUpdateCalendar() {
+        if (taskService != null && userId != null) {
+            updateCalendar();
+        }
     }
 
     @FXML
@@ -65,8 +78,11 @@ public class CalendarController {
         updateCalendar();
     }
 
-
     private void updateCalendar() {
+        if (taskService == null || userId == null) {
+            return;
+        }
+
         calendarGrid.getChildren().clear();
         monthLabel.setText(currentMonth.getMonth().getDisplayName(java.time.format.TextStyle.FULL, Locale.getDefault()) + " " + currentMonth.getYear());
 
@@ -83,9 +99,10 @@ public class CalendarController {
 
         LocalDate firstDayOfMonth = currentMonth.atDay(1);
         int dayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
+        if (dayOfWeek == 7) dayOfWeek = 0;
 
         int row = 1;
-        int column = dayOfWeek - 1;
+        int column = dayOfWeek;
         int daysInMonth = currentMonth.lengthOfMonth();
 
         for (int i = 0; i < column; i++) {
@@ -94,16 +111,9 @@ public class CalendarController {
         }
 
         for (int day = 1; day <= daysInMonth; day++) {
-            Label dayLabel = new Label(String.valueOf(day));
-            dayLabel.setFont(new Font("Arial", 20));
-            dayLabel.setTextAlignment(TextAlignment.CENTER);
-            dayLabel.setStyle("-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: white; -fx-background-color: #7a5dab; -fx-padding: 15px;");
+            Label dayLabel = createDayLabel(day);
             int finalDay = day;
             dayLabel.setOnMouseClicked(event -> openTaskView(currentMonth.atDay(finalDay)));
-            dayLabel.setMaxWidth(Double.MAX_VALUE);
-            dayLabel.setMaxHeight(Double.MAX_VALUE);
-            dayLabel.setOnMouseEntered(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #6a449b; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
-            dayLabel.setOnMouseExited(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #7a5dab; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
 
             StackPane pane = new StackPane(dayLabel);
             calendarGrid.add(pane, column, row);
@@ -120,6 +130,41 @@ public class CalendarController {
             calendarGrid.add(emptyPane, column, row);
             column++;
         }
+
+        LocalDate today = LocalDate.now();
+        List<Taskss> allTasks = taskService.getTasksByUserId(userId);
+
+        List<Taskss> pendingTasks = allTasks.stream()
+                .filter(task -> !task.getStatus().name().equals("DONE"))
+                .toList();
+
+        boolean hasTasksToday = pendingTasks.stream()
+                .anyMatch(task -> task.getStartDateTime().toLocalDate().equals(today));
+
+        Optional<LocalDate> closestFutureTaskDate = pendingTasks.stream()
+                .map(task -> task.getStartDateTime().toLocalDate())
+                .filter(date -> date.isAfter(today))
+                .min(LocalDate::compareTo);
+
+        if (hasTasksToday) {
+            taskStatusLabel.setText("Check today's tasks, you have something going on!");
+        } else if (closestFutureTaskDate.isPresent()) {
+            taskStatusLabel.setText("You have tasks to do until " + closestFutureTaskDate.get());
+        } else {
+            taskStatusLabel.setText("No pending tasks. Enjoy your day!");
+        }
+    }
+
+    private Label createDayLabel(int day) {
+        Label dayLabel = new Label(String.valueOf(day));
+        dayLabel.setFont(new Font("Arial", 20));
+        dayLabel.setTextAlignment(TextAlignment.CENTER);
+        dayLabel.setStyle("-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: white; -fx-background-color: #7a5dab; -fx-padding: 15px;");
+        dayLabel.setMaxWidth(Double.MAX_VALUE);
+        dayLabel.setMaxHeight(Double.MAX_VALUE);
+        dayLabel.setOnMouseEntered(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #6a449b; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
+        dayLabel.setOnMouseExited(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #7a5dab; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
+        return dayLabel;
     }
 
     private StackPane createEmptyCell() {
@@ -134,16 +179,31 @@ public class CalendarController {
     }
 
     private void openTaskView(LocalDate date) {
+        if (taskService == null) {
+            showAlert("Error", "Task Service is not initialized.");
+            return;
+        }
+        if (userId == null) {
+            showAlert("Error", "User ID is missing.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/taskuri/task-view.fxml"));
             Parent root = loader.load();
 
             TaskController taskController = loader.getController();
             taskController.setTaskService(taskService);
+            taskController.setUserId(userId);
             taskController.setSelectedDate(date);
 
-            if (this.noteService != null) {
-                taskController.setNoteService(this.noteService);
+            List<Taskss> userTasks = taskService.getTasksByUserAndDate(userId, date);
+            if (userTasks != null) {
+                taskController.loadUserTasks(userTasks);
+            }
+
+            if (noteService != null) {
+                taskController.setNoteService(noteService);
             }
 
             Stage stage = new Stage();
@@ -154,5 +214,13 @@ public class CalendarController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

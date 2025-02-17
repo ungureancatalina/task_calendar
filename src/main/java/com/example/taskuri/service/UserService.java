@@ -4,8 +4,7 @@ import com.example.taskuri.domain.User;
 import com.example.taskuri.repository.Repository;
 import com.example.taskuri.validation.ValidationException;
 import com.example.taskuri.validation.Validator;
-
-import java.util.List;
+import java.util.Optional;
 
 public class UserService {
     private final Repository<User> userRepository;
@@ -21,18 +20,20 @@ public class UserService {
         userRepository.add(user);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.getAll();
-    }
-
     public User getUserByEmail(String email) {
-        return userRepository.getAll().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst()
-                .orElse(null);
+        return userRepository.getUserByEmail(email);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.delete(id);
+    public boolean checkUserCredentials(String email, String password) {
+        User user = getUserByEmail(email);
+        return user != null && user.getPassword().equals(password);
+    }
+
+    public Optional<User> authenticateUser(String email, String password) {
+        User user = getUserByEmail(email);
+        if (user != null && user.getPassword().equals(password)) {
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 }

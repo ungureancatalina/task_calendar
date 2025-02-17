@@ -12,8 +12,9 @@ public class Taskss {
     private LocalDateTime finishDateTime;
     private TaskStatus status;
     private List<Notes> notes;
+    private Long userId;
 
-    public Taskss(Long id, String title, String description, LocalDateTime startDateTime, LocalDateTime finishDateTime, TaskStatus status) {
+    public Taskss(Long id, String title, String description, LocalDateTime startDateTime, LocalDateTime finishDateTime, TaskStatus status, Long userId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -21,6 +22,7 @@ public class Taskss {
         this.finishDateTime = finishDateTime;
         this.status = status;
         this.notes = new ArrayList<>();
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -49,6 +51,9 @@ public class Taskss {
 
     public List<Notes> getNotes() {
         return notes;
+    }
+    public Long getUserId() {
+        return userId;
     }
 
     public void setTitle(String title) {

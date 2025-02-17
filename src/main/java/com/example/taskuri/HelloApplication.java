@@ -1,12 +1,16 @@
 package com.example.taskuri;
 
 import com.example.taskuri.controller.CalendarController;
+import com.example.taskuri.controller.LoginController;
 import com.example.taskuri.repository.NoteRepositoryImpl;
 import com.example.taskuri.repository.TaskRepositoryImpl;
+import com.example.taskuri.repository.UserRepositoryImpl;
 import com.example.taskuri.service.NoteService;
 import com.example.taskuri.service.TaskService;
+import com.example.taskuri.service.UserService;
 import com.example.taskuri.validation.NotesValidator;
 import com.example.taskuri.validation.TaskValidator;
+import com.example.taskuri.validation.UserValidator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -26,17 +30,19 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         checkDatabaseConnection();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/taskuri/login-view.fxml"));
+        Scene scene = new Scene(loader.load(), 400, 300);
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/example/taskuri/calendar-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 980, 650);
-
-        CalendarController controller = fxmlLoader.getController();
+        UserService userService = new UserService(new UserRepositoryImpl(URL, USER, PASSWORD), new UserValidator());
         NoteService noteService = new NoteService(new NoteRepositoryImpl(URL, USER, PASSWORD), new NotesValidator());
         TaskService taskService = new TaskService(new TaskRepositoryImpl(URL, USER, PASSWORD), new TaskValidator());
-        controller.setTaskService(taskService);
-        controller.setNoteService(noteService);
 
-        stage.setTitle("Task Calendar");
+        LoginController loginController = loader.getController();
+        loginController.setUserService(userService);
+        loginController.setNoteService(noteService);
+        loginController.setTaskService(taskService);
+
+        stage.setTitle("Login");
         stage.setScene(scene);
         stage.show();
     }
