@@ -33,7 +33,7 @@ public class NoteController {
 
     public void setTask(Taskss task) {
         this.task = task;
-        taskDescriptionTextArea.setText(task.getDescription());
+        taskDescriptionTextArea.setText("Description: \n" + task.getDescription());
         loadNotes();
     }
 

@@ -8,7 +8,6 @@
 
     <TextArea fx:id="taskDescriptionTextArea" layoutX="20" layoutY="20" prefWidth="420" prefHeight="160"
               editable="false"
-              text="Description :  "
               style="-fx-font-size: 16px; -fx-border-color: #4b0082; -fx-control-inner-background: #eee4f8;"/>
 
     <TextArea fx:id="notesTextArea" layoutX="460" layoutY="20" prefWidth="420" prefHeight="160"

@@ -1,7 +1,6 @@
 package com.example.taskuri.service;
 
 import com.example.taskuri.domain.Taskss;
-import com.example.taskuri.observer.Observable;
 import com.example.taskuri.repository.Repository;
 import com.example.taskuri.validation.ValidationException;
 import com.example.taskuri.validation.Validator;

@@ -52,8 +52,7 @@
            style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
     <DatePicker fx:id="startDatePicker" prefWidth="160" layoutX="400" layoutY="370"
                 style="-fx-font-size: 16px; -fx-border-color: #4b0082; -fx-font-weight: bold;
-                 -fx-border-width: 2px;"/>
-
+                   -fx-border-width: 2px; -fx-background-color: #a48bce; -fx-control-inner-background: #a48bce;"/>
     <Label text="Start Time:" layoutX="600" layoutY="330"
            style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
     <ComboBox fx:id="startTimeComboBox" prefWidth="160" layoutX="600" layoutY="370"
@@ -63,9 +62,8 @@
     <Label text="Finish Date:" layoutX="400" layoutY="420"
            style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
     <DatePicker fx:id="finishDatePicker" prefWidth="160" layoutX="400" layoutY="460"
-                style="-fx-font-size: 16px; -fx-border-color: #4b0082;  -fx-font-weight: bold;
-                -fx-border-width: 2px;"/>
-
+                style="-fx-font-size: 16px; -fx-border-color: #4b0082; -fx-font-weight: bold;
+                   -fx-border-width: 2px; -fx-background-color: #a48bce; -fx-control-inner-background: #a48bce;"/>
     <Label text="Finish Time:" layoutX="600" layoutY="420"
            style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4b0082;"/>
     <ComboBox fx:id="finishTimeComboBox" prefWidth="160" layoutX="600" layoutY="460"

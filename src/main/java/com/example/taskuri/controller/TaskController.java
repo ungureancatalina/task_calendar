@@ -105,6 +105,28 @@ public class TaskController {
         startTimeComboBox.setItems(FXCollections.observableArrayList(timeSlots));
         finishTimeComboBox.setItems(FXCollections.observableArrayList(timeSlots));
 
+        taskTableView.setRowFactory(tv -> new TableRow<Taskss>() {
+            @Override
+            protected void updateItem(Taskss task, boolean empty) {
+                super.updateItem(task, empty);
+
+                if (task == null || empty) {
+                    setStyle("");
+                } else {
+                    setStyle("-fx-background-color: #a48bce; -fx-text-fill: black; -fx-font-weight: bold;");
+                    selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                        if (isSelected) {
+                            setStyle("-fx-background-color: #c9a8e0; -fx-text-fill: black; -fx-font-weight: bold;");
+                        } else {
+                            setStyle("-fx-background-color: #a48bce; -fx-text-fill: black; -fx-font-weight: bold;");
+                        }
+                    });
+                    setOnMouseEntered(e -> setStyle("-fx-background-color: #c9a8e0; -fx-text-fill: black; -fx-font-weight: bold;"));
+                    setOnMouseExited(e -> setStyle("-fx-background-color: #a48bce; -fx-text-fill: black; -fx-font-weight: bold;"));
+                }
+            }
+        });
+
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDateTime"));
         finishDateColumn.setCellValueFactory(new PropertyValueFactory<>("finishDateTime"));

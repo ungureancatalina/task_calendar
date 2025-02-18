@@ -78,7 +78,12 @@ public class CalendarController {
         updateCalendar();
     }
 
-    private void updateCalendar() {
+    public YearMonth getCurrentMonth() {
+        return currentMonth;
+    }
+
+
+    public void updateCalendar() {
         if (taskService == null || userId == null) {
             return;
         }
@@ -104,14 +109,44 @@ public class CalendarController {
         int row = 1;
         int column = dayOfWeek;
         int daysInMonth = currentMonth.lengthOfMonth();
+        LocalDate today = LocalDate.now();
 
         for (int i = 0; i < column; i++) {
             StackPane emptyPane = createEmptyCell();
             calendarGrid.add(emptyPane, i, row);
         }
 
+        List<LocalDate> taskDates = taskService.getTasksByUserId(userId)
+                .stream()
+                .map(task -> task.getStartDateTime().toLocalDate())
+                .distinct()
+                .toList();
+
         for (int day = 1; day <= daysInMonth; day++) {
-            Label dayLabel = createDayLabel(day);
+            LocalDate currentDate = currentMonth.atDay(day);
+            Label dayLabel = new Label(String.valueOf(day));
+            dayLabel.setFont(new Font("Arial", 20));
+            dayLabel.setTextAlignment(TextAlignment.CENTER);
+            dayLabel.setMaxWidth(Double.MAX_VALUE);
+            dayLabel.setMaxHeight(Double.MAX_VALUE);
+            String defaultStyle = "-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: white; -fx-background-color: #7a5dab; -fx-padding: 15px;";
+
+            if (currentDate.equals(today)) {
+                defaultStyle = "-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: black; -fx-background-color: #a48bce; -fx-padding: 15px;";
+            }
+            if (taskDates.contains(currentDate)) {
+                defaultStyle = "-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: red; -fx-background-color: #7a5dab; -fx-padding: 15px;";
+            }
+            if (currentDate.equals(today) && taskDates.contains(currentDate)) {
+                defaultStyle = "-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: red; -fx-background-color: #a48bce; -fx-padding: 15px;";
+            }
+
+            dayLabel.setStyle(defaultStyle);
+            String finalDefaultStyle = defaultStyle;
+            dayLabel.setOnMouseEntered(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #6a449b; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
+            dayLabel.setOnMouseExited(event -> dayLabel.setStyle(finalDefaultStyle));
+
+
             int finalDay = day;
             dayLabel.setOnMouseClicked(event -> openTaskView(currentMonth.atDay(finalDay)));
 
@@ -130,41 +165,47 @@ public class CalendarController {
             calendarGrid.add(emptyPane, column, row);
             column++;
         }
+        updateTaskStatusForMonth();
+    }
 
+    private void updateTaskStatusForMonth() {
         LocalDate today = LocalDate.now();
+        YearMonth displayedMonth = currentMonth;
+
         List<Taskss> allTasks = taskService.getTasksByUserId(userId);
 
         List<Taskss> pendingTasks = allTasks.stream()
                 .filter(task -> !task.getStatus().name().equals("DONE"))
                 .toList();
 
-        boolean hasTasksToday = pendingTasks.stream()
-                .anyMatch(task -> task.getStartDateTime().toLocalDate().equals(today));
+        if (displayedMonth.equals(YearMonth.from(today))) {
+            boolean hasTasksToday = pendingTasks.stream()
+                    .anyMatch(task -> task.getStartDateTime().toLocalDate().equals(today));
 
-        Optional<LocalDate> closestFutureTaskDate = pendingTasks.stream()
-                .map(task -> task.getStartDateTime().toLocalDate())
-                .filter(date -> date.isAfter(today))
-                .min(LocalDate::compareTo);
+            Optional<LocalDate> closestFutureTaskDate = pendingTasks.stream()
+                    .map(task -> task.getStartDateTime().toLocalDate())
+                    .filter(date -> date.isAfter(today))
+                    .min(LocalDate::compareTo);
 
-        if (hasTasksToday) {
-            taskStatusLabel.setText("Check today's tasks, you have something going on!");
-        } else if (closestFutureTaskDate.isPresent()) {
-            taskStatusLabel.setText("You have tasks to do until " + closestFutureTaskDate.get());
+            if (hasTasksToday) {
+                taskStatusLabel.setText("Check today's tasks, you have something going on!");
+            } else if (closestFutureTaskDate.isPresent()) {
+                taskStatusLabel.setText("You have tasks to do until " + closestFutureTaskDate.get());
+            } else {
+                taskStatusLabel.setText("No pending tasks. Enjoy your day!");
+            }
         } else {
-            taskStatusLabel.setText("No pending tasks. Enjoy your day!");
-        }
-    }
+            Optional<LocalDate> earliestTaskDate = pendingTasks.stream()
+                    .map(task -> task.getStartDateTime().toLocalDate())
+                    .filter(date -> YearMonth.from(date).equals(displayedMonth))
+                    .min(LocalDate::compareTo);
 
-    private Label createDayLabel(int day) {
-        Label dayLabel = new Label(String.valueOf(day));
-        dayLabel.setFont(new Font("Arial", 20));
-        dayLabel.setTextAlignment(TextAlignment.CENTER);
-        dayLabel.setStyle("-fx-alignment: CENTER; -fx-border-color: black; -fx-text-fill: white; -fx-background-color: #7a5dab; -fx-padding: 15px;");
-        dayLabel.setMaxWidth(Double.MAX_VALUE);
-        dayLabel.setMaxHeight(Double.MAX_VALUE);
-        dayLabel.setOnMouseEntered(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #6a449b; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
-        dayLabel.setOnMouseExited(event -> dayLabel.setStyle("-fx-alignment: CENTER;-fx-background-color: #7a5dab; -fx-border-color: black; -fx-text-fill: white; -fx-padding: 15px;"));
-        return dayLabel;
+            if (earliestTaskDate.isPresent()) {
+                taskStatusLabel.setText("First task in " + displayedMonth.getMonth() + ": " + earliestTaskDate.get());
+            } else {
+                taskStatusLabel.setText("No tasks scheduled for " + displayedMonth.getMonth() + ".");
+            }
+        }
     }
 
     private StackPane createEmptyCell() {
