@@ -2,7 +2,7 @@
 
 **Task Calendar** is a Java-based desktop application designed to help users organize their tasks efficiently. It provides a calendar interface for scheduling, viewing, and managing tasks.
 
-The application uses a database for persistent storage and supports user authentication, allowing personalized task tracking. Each task can have additional notes and details for better organization.
+The application uses a **PostgreSQL database** for persistent storage and supports user authentication, allowing personalized task tracking. Each task can have additional notes and details for better organization.
 
 ---
 
@@ -12,21 +12,20 @@ The application uses a database for persistent storage and supports user authent
 |------------------|----------------------------------------|
 | Java             | Core programming language              |
 | JavaFX           | Graphical user interface               |
-| SQLite           | Embedded database                      |
+| PostgreSQL       | Relational database for data storage   |
 | JDBC             | Database connectivity                  |
-| SceneBuilder     | UI layout editor (optional)            |
 
 ---
 
 ## Features
 
 - Visual calendar for scheduling tasks
-- Persistent task storage using SQLite
+- Persistent task storage using PostgreSQL
 - User login system for personal task management
 - Add, edit, and delete tasks
 - Add detailed notes for each task
 - Clean and intuitive interface built with JavaFX
-
+- 
 ---
 
 ## Project Structure
@@ -34,9 +33,9 @@ The application uses a database for persistent storage and supports user authent
 ```
 task_calendar/
 ├── controller/        -> JavaFX controllers for UI interaction
-├── database/          -> SQLite database file and DB access logic
 ├── model/             -> Task and user data classes
 ├── service/           -> Business logic
+├── repository/        -> JDBC access to PostgreSQL
 ├── utils/             -> Helper methods (e.g. date, input checks)
 ├── resources/         -> FXML layouts, icons
 └── Main.java          -> Entry point
@@ -51,6 +50,7 @@ task_calendar/
 - Java 17+
 - JavaFX SDK (set in your IDE)
 - An IDE like IntelliJ IDEA or VS Code
+- PostgreSQL installed and running
 
 ### Steps
 
